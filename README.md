@@ -7,7 +7,7 @@ This project implements an e-commerce system with `Product` and `Category` class
   - Stores name, description, quantity, and private price (`__price`).
   - Getter/setter for `price` with validation (price > 0).
   - Class method `new_product` to create products from dictionaries.
-- **Category class**: 
+- **Category class**:
   - Manages categories with name, description, and private product list (`__products`).
   - Tracks total categories (`category_count`) and products (`product_count`).
   - Method `add_product` to add products to `__products`.
