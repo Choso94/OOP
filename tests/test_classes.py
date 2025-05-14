@@ -1,5 +1,5 @@
 import pytest
-from src.classes import Product, Category
+from src.classes import Product, Category, Smartphone, LawnGrass, BaseProduct
 
 
 @pytest.fixture
@@ -21,6 +21,33 @@ def sample_category(sample_product):
             "но и получения дополнительных функций для удобства жизни"
         ),
         products=[sample_product]
+    )
+
+
+@pytest.fixture
+def sample_smartphone():
+    return Smartphone(
+        name="Samsung Galaxy S23 Ultra",
+        description="256GB, Серый цвет, 200MP камера",
+        price=180000.0,
+        quantity=5,
+        efficiency=95.5,
+        model="S23 Ultra",
+        memory=256,
+        color="Серый"
+    )
+
+
+@pytest.fixture
+def sample_lawn_grass():
+    return LawnGrass(
+        name="Газонная трава",
+        description="Элитная трава для газона",
+        price=500.0,
+        quantity=20,
+        country="Россия",
+        germination_period="7 дней",
+        color="Зеленый"
     )
 
 
@@ -82,17 +109,18 @@ def test_add_product(sample_product):
         category.add_product("not a product")
 
 
-def test_add_product_subclass():
-    class TestProduct(Product):
-        pass
-    test_product = TestProduct("Test Item", "Test desc", 1000.0, 1)
+def test_add_product_subclass(sample_smartphone, sample_lawn_grass):
     category = Category("Test", "Test category", [])
     Category.product_count = 0
-    category.add_product(test_product)
+    category.add_product(sample_smartphone)
     assert len(category._Category__products) == 1
     assert Category.product_count == 1
     assert isinstance(category._Category__products[0], Product)
-    assert isinstance(category._Category__products[0], TestProduct)
+    assert isinstance(category._Category__products[0], Smartphone)
+    category.add_product(sample_lawn_grass)
+    assert len(category._Category__products) == 2
+    assert Category.product_count == 2
+    assert isinstance(category._Category__products[1], LawnGrass)
 
 
 def test_products_getter(sample_product):
@@ -134,3 +162,73 @@ def test_category_str(sample_product):
     category = Category("Test", "Test category", [sample_product])
     expected = "Test, количество продуктов: 5 шт."
     assert str(category) == expected
+
+
+def test_smartphone_initialization(sample_smartphone):
+    assert sample_smartphone.name == "Samsung Galaxy S23 Ultra"
+    assert sample_smartphone.efficiency == 95.5
+    assert sample_smartphone.model == "S23 Ultra"
+    assert sample_smartphone.memory == 256
+    assert sample_smartphone.color == "Серый"
+
+
+def test_lawn_grass_initialization(sample_lawn_grass):
+    assert sample_lawn_grass.name == "Газонная трава"
+    assert sample_lawn_grass.country == "Россия"
+    assert sample_lawn_grass.germination_period == "7 дней"
+    assert sample_lawn_grass.color == "Зеленый"
+
+
+def test_add_method(sample_smartphone, sample_lawn_grass, sample_product):
+    smartphone2 = Smartphone(
+        name="Iphone 15",
+        description="512GB, Gray space",
+        price=210000.0,
+        quantity=8,
+        efficiency=98.2,
+        model="15",
+        memory=512,
+        color="Gray space"
+    )
+    assert sample_smartphone + smartphone2 == 2580000.0
+    with pytest.raises(TypeError):
+        sample_smartphone + sample_lawn_grass
+    with pytest.raises(TypeError):
+        sample_smartphone + "not a product"
+    with pytest.raises(TypeError):
+        sample_smartphone + sample_product
+    with pytest.raises(TypeError):
+        sample_product + sample_smartphone  # Дополнительный тест для покрытия
+
+
+def test_print_init_mixin(capsys):
+    Product(
+        name="Test Product",
+        description="Test desc",
+        price=1000.0,
+        quantity=10
+    )
+    captured = capsys.readouterr()
+    assert captured.out.startswith(
+        "Создан объект Product('Test Product', 'Test desc', 1000.0, 10)"
+    )
+
+    Smartphone(
+        name="Test Smartphone",
+        description="Test desc",
+        price=2000.0,
+        quantity=5,
+        efficiency=90.0,
+        model="Test Model",
+        memory=128,
+        color="Black"
+    )
+    captured = capsys.readouterr()
+    assert captured.out.startswith(
+        "Создан объект Smartphone('Test Smartphone', 'Test desc', 2000.0, 5)"
+    )
+
+
+def test_base_product_abstract():
+    with pytest.raises(TypeError):
+        BaseProduct()
