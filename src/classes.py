@@ -34,59 +34,12 @@ class Product:
             name=product_data["name"],
             description=product_data["description"],
             price=product_data["price"],
-            quantity=product_data["quantity"],
+            quantity=product_data["quantity"]
         )
 
     def __str__(self) -> str:
         """Возвращает строковое представление продукта."""
         return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
-
-    def __add__(self, other: 'Product') -> float:
-        """Суммирует произведения цены на количество."""
-        if not isinstance(other, Product):
-            raise TypeError("Можно складывать только объекты Product")
-        if type(self) is not type(other):
-            raise TypeError("Можно складывать только объекты одного класса")
-        return (
-            (self.__price * self.quantity) +
-            (other.__price * other.quantity)
-        )
-
-
-class Smartphone(Product):
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        price: float,
-        quantity: int,
-        efficiency: float,
-        model: str,
-        memory: int,
-        color: str
-    ):
-        super().__init__(name, description, price, quantity)
-        self.efficiency = efficiency
-        self.model = model
-        self.memory = memory
-        self.color = color
-
-
-class LawnGrass(Product):
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        price: float,
-        quantity: int,
-        country: str,
-        germination_period: str,
-        color: str
-    ):
-        super().__init__(name, description, price, quantity)
-        self.country = country
-        self.germination_period = germination_period
-        self.color = color
 
 
 class Category:
@@ -108,7 +61,7 @@ class Category:
     def add_product(self, product: Product) -> None:
         """Добавляет продукт в категорию."""
         if not isinstance(product, Product):
-            raise TypeError("Добавлять можно только Product или его наследников")
+            raise TypeError("Можно добавлять только Product или его подклассы")
         self.__products.append(product)
         Category.product_count += 1
 

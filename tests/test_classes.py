@@ -1,5 +1,5 @@
 import pytest
-from src.classes import Product, Category, Smartphone, LawnGrass
+from src.classes import Product, Category
 
 
 @pytest.fixture
@@ -13,41 +13,14 @@ def sample_product():
 
 
 @pytest.fixture
-def sample_smartphone():
-    return Smartphone(
-        name="Samsung Galaxy S23 Ultra",
-        description="256GB, Серый цвет, 200MP камера",
-        price=180000.0,
-        quantity=5,
-        efficiency=95.5,
-        model="S23 Ultra",
-        memory=256,
-        color="Серый"
-    )
-
-
-@pytest.fixture
-def sample_lawngrass():
-    return LawnGrass(
-        name="Газонная трава",
-        description="Элитная трава для газона",
-        price=500.0,
-        quantity=20,
-        country="Россия",
-        germination_period="7 дней",
-        color="Зеленый"
-    )
-
-
-@pytest.fixture
-def sample_category(sample_smartphone):
+def sample_category(sample_product):
     return Category(
         name="Смартфоны",
         description=(
             "Смартфоны, как средство не только коммуникации, "
             "но и получения дополнительных функций для удобства жизни"
         ),
-        products=[sample_smartphone]
+        products=[sample_product]
     )
 
 
@@ -98,25 +71,32 @@ def test_empty_category():
     assert Category.product_count == 0
 
 
-def test_add_product(sample_product, sample_smartphone, sample_lawngrass):
+def test_add_product(sample_product):
     Category.product_count = 0
     category = Category("Test", "Test category", [])
     category.add_product(sample_product)
     assert len(category._Category__products) == 1
     assert Category.product_count == 1
     assert category._Category__products[0] == sample_product
-    category.add_product(sample_smartphone)
-    assert len(category._Category__products) == 2
-    assert Category.product_count == 2
-    category.add_product(sample_lawngrass)
-    assert len(category._Category__products) == 3
-    assert Category.product_count == 3
     with pytest.raises(TypeError):
         category.add_product("not a product")
 
 
-def test_products_getter(sample_smartphone):
-    category = Category("Test", "Test category", [sample_smartphone])
+def test_add_product_subclass():
+    class TestProduct(Product):
+        pass
+    test_product = TestProduct("Test Item", "Test desc", 1000.0, 1)
+    category = Category("Test", "Test category", [])
+    Category.product_count = 0
+    category.add_product(test_product)
+    assert len(category._Category__products) == 1
+    assert Category.product_count == 1
+    assert isinstance(category._Category__products[0], Product)
+    assert isinstance(category._Category__products[0], TestProduct)
+
+
+def test_products_getter(sample_product):
+    category = Category("Test", "Test category", [sample_product])
     expected = "Samsung Galaxy S23 Ultra, 180000.0 руб. Остаток: 5 шт.\n"
     assert category.products == expected
 
@@ -150,55 +130,7 @@ def test_product_str(sample_product):
     assert str(sample_product) == expected
 
 
-def test_category_str(sample_smartphone):
-    category = Category("Test", "Test category", [sample_smartphone])
+def test_category_str(sample_product):
+    category = Category("Test", "Test category", [sample_product])
     expected = "Test, количество продуктов: 5 шт."
     assert str(category) == expected
-
-
-def test_product_add(sample_product):
-    product2 = Product("Test", "Test desc", 1000.0, 2)
-    result = sample_product + product2
-    expected = (180000.0 * 5) + (1000.0 * 2)  # 900000 + 2000
-    assert result == expected
-    with pytest.raises(TypeError):
-        sample_product + "not a product"
-
-
-def test_smartphone_initialization(sample_smartphone):
-    assert sample_smartphone.name == "Samsung Galaxy S23 Ultra"
-    assert sample_smartphone.description == "256GB, Серый цвет, 200MP камера"
-    assert sample_smartphone.price == 180000.0
-    assert sample_smartphone.quantity == 5
-    assert sample_smartphone.efficiency == 95.5
-    assert sample_smartphone.model == "S23 Ultra"
-    assert sample_smartphone.memory == 256
-    assert sample_smartphone.color == "Серый"
-
-
-def test_lawngrass_initialization(sample_lawngrass):
-    assert sample_lawngrass.name == "Газонная трава"
-    assert sample_lawngrass.description == "Элитная трава для газона"
-    assert sample_lawngrass.price == 500.0
-    assert sample_lawngrass.quantity == 20
-    assert sample_lawngrass.country == "Россия"
-    assert sample_lawngrass.germination_period == "7 дней"
-    assert sample_lawngrass.color == "Зеленый"
-
-
-def test_add_restriction(sample_smartphone, sample_lawngrass):
-    smartphone2 = Smartphone(
-        name="Iphone 15",
-        description="512GB",
-        price=210000.0,
-        quantity=8,
-        efficiency=98.2,
-        model="15",
-        memory=512,
-        color="Gray"
-    )
-    result = sample_smartphone + smartphone2
-    expected = (180000.0 * 5) + (210000.0 * 8)  # 900000 + 1680000
-    assert result == expected
-    with pytest.raises(TypeError):
-        sample_smartphone + sample_lawngrass
